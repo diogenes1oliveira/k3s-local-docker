@@ -1,0 +1,6 @@
+*.env
+*.envrc
+/charts
+/.local
+/var
+*.tmp

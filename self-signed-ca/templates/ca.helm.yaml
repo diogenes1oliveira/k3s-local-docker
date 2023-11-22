@@ -1,0 +1,20 @@
+---
+apiVersion: v1
+kind: Secret
+type: kubernetes.io/tls
+metadata:
+  name: selfsigned-ca-secret
+  namespace: "{{ .Release.Namespace }}"
+data:
+  tls.crt: {{ .Files.Get ".secret/tls.crt" | b64enc }}
+  tls.key: {{ .Files.Get ".secret/tls.key" | b64enc }}
+
+---
+apiVersion: cert-manager.io/v1
+kind: ClusterIssuer
+metadata:
+  name: selfsigned-ca-issuer
+  namespace: "{{ .Release.Namespace }}"
+spec:
+  ca:
+    secretName: selfsigned-ca-secret

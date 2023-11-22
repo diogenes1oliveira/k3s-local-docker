@@ -1,0 +1,6 @@
+hostname: {{ requiredEnv "CLUSTER_HOSTNAME" }}
+port: {{ requiredEnv "DOCKER_REGISTRY_PORT" }}
+auth:
+  username: {{ requiredEnv "CLUSTER_USERNAME" | quote }}
+  password: {{ requiredEnv "CLUSTER_PASSWORD" | quote }}
+secret: {{ requiredEnv "CLUSTER_SECRET" | quote }}

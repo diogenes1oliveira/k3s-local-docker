@@ -1,0 +1,87 @@
+---
+apiVersion: apps/v1
+kind: Deployment
+metadata:
+  name: docker-registry
+  namespace: "{{ .Release.Namespace }}"
+  labels:
+    app: docker-registry
+spec:
+  replicas: 1
+  selector:
+    matchLabels:
+      app: docker-registry
+  template:
+    metadata:
+      labels:
+        app: docker-registry
+    spec:
+      containers:
+        - name: registry
+          image: library/registry:2
+          #command: [ "tail", "-f", "/dev/null"]
+          env:
+            - name: REGISTRY_HTTP_ADDR
+              value: 0.0.0.0:{{ .Values.port }}
+            - name: REGISTRY_HTTP_HOST
+              value: https://{{ .Values.hostname }}:{{ .Values.port }}
+            - name: REGISTRY_HTTP_DEBUG_ADDR
+              value: 0.0.0.0:5001
+            - name: REGISTRY_AUTH
+              value: htpasswd
+            - name: REGISTRY_AUTH_HTPASSWD_PATH
+              value: /etc/security/auth/htpasswd
+            - name: REGISTRY_AUTH_HTPASSWD_REALM
+              value: "{{ .Values.hostname }}"
+            - name: REGISTRY_HTTP_TLS_CERTIFICATE
+              value: /etc/security/tls/tls.crt
+            - name: REGISTRY_HTTP_TLS_KEY
+              value: /etc/security/tls/tls.key
+            - name: REGISTRY_HTTP_SECRET
+              valueFrom:
+                secretKeyRef:
+                  name: docker-registry-auth
+                  key: token.secret
+            - name: REGISTRY_LOG_LEVEL
+              value: debug
+          ports:
+            - name: registry
+              containerPort: {{ .Values.port }}
+            - name: debug
+              containerPort: 5001
+          livenessProbe:
+            httpGet:
+              path: /debug/health
+              port: debug
+            initialDelaySeconds: 10
+            periodSeconds: 20
+          readinessProbe:
+            httpGet:
+              path: /debug/health
+              port: debug
+            initialDelaySeconds: 10
+            periodSeconds: 20
+          resources:
+            requests:
+              cpu: 500m
+              memory: 500Mi
+            limits:
+              cpu: 700m
+              memory: 700Mi
+          volumeMounts:
+            - mountPath: /var/lib/registry
+              name: data
+            - mountPath: /etc/security/auth
+              name: auth
+            - mountPath: /etc/security/tls
+              name: tls
+      volumes:
+        - name: data
+          persistentVolumeClaim:
+            claimName: docker-registry-data
+        - name: auth
+          secret:
+            secretName: docker-registry-auth
+        - name: tls
+          secret:
+            secretName: registry-certificate-tls

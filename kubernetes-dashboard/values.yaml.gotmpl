@@ -1,0 +1,5 @@
+dashboard:
+  hostname: {{ requiredEnv "CLUSTER_HOSTNAME" }}
+  auth:
+    username: {{ requiredEnv "CLUSTER_USERNAME" | quote }}
+    password: {{ requiredEnv "CLUSTER_PASSWORD" | quote }}

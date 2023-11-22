@@ -1,0 +1,7 @@
+apiVersion: v1
+kind: ConfigMap
+metadata:
+  name: dashboard-nginx-conf
+  namespace: "{{ .Release.Namespace }}"
+data:
+{{ (.Files.Glob "files/nginx*").AsConfig | indent 2 }}

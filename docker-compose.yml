@@ -1,0 +1,110 @@
+version: "2.4"
+services:
+  master:
+    hostname: $CLUSTER_HOSTNAME
+    image: ${DOCKER_IO_MIRROR:-docker.io}/rancher/k3s:v1.28.3-k3s2
+    network_mode: host
+    privileged: true
+    restart: unless-stopped
+    shm_size: 2g
+    depends_on:
+      - python3
+    environment:
+      - K3S_NODE_NAME=$CLUSTER_HOSTNAME
+      - K3S_KUBECONFIG_MODE=644
+      - http_proxy=${K3S_HTTP_PROXY:-}
+      - https_proxy=${K3S_HTTP_PROXY:-}
+      - no_proxy=${K3S_NO_PROXY:-}
+      - HTTP_PROXY=${K3S_HTTP_PROXY:-}
+      - HTTPS_PROXY=${K3S_HTTP_PROXY:-}
+      - NO_PROXY=${K3S_NO_PROXY:-}
+    volumes:
+      - ${CLUSTER_LOCAL_PATH:-./.local}/etc/rancher:/etc/rancher
+      - ${CLUSTER_LOCAL_PATH:-./.local}/var/lib:/var/lib
+      - ${CLUSTER_LOCAL_PATH:-./.local}/run:/run
+    entrypoint:
+      - /bin/sh
+      - -c
+    command:
+      - |
+        set -eu
+        while ! [ -f /etc/rancher/k3s/registries.yaml ] || ! [ -f /etc/rancher/k3s/config.yaml ]; do
+          echo >&2 "INFO: config files not found yet, checking again in 2s"
+          sleep 2
+        done
+        echo >&2 "INFO: config files present, starting k3s in 10s"
+        sleep 10
+        exec /bin/k3s server
+
+  python3:
+    image: ${DOCKER_IO_MIRROR:-docker.io}/library/python:3.9
+    restart: unless-stopped
+    network_mode: host
+    privileged: true
+    mem_limit: 500m
+    shm_size: 1g
+    cpus: 1
+    environment:
+      - CLUSTER_HOSTNAME
+      - DOCKER_REGISTRY_PORT
+      - PIP_ROOT_USER_ACTION=ignore
+      - DOCKER_IO_MIRROR
+      - PIP_NO_CACHE_DIR=true
+      - USER_UID
+      - USER_GID
+      - http_proxy=${K3S_HTTP_PROXY:-}
+      - https_proxy=${K3S_HTTP_PROXY:-}
+      - no_proxy=${K3S_NO_PROXY:-}
+      - HTTP_PROXY=${K3S_HTTP_PROXY:-}
+      - HTTPS_PROXY=${K3S_HTTP_PROXY:-}
+      - NO_PROXY=${K3S_NO_PROXY:-}
+    volumes:
+      - ${K3S_CONFIG_FILE:-./.dev/config.yaml}:/.dev/config.yaml:ro
+      - ${CLUSTER_LOCAL_PATH:-./.local}/etc/rancher:/etc/rancher
+      - ${CLUSTER_LOCAL_PATH:-./.local}/var/lib:/var/lib
+      - ${CLUSTER_LOCAL_PATH:-./.local}/run:/run
+      - ./.dev/print-registries.sh:/print-registries.sh:ro
+      - ./.dev/kubeconfig-fix.py:/kubeconfig-fix.py:ro
+      - ${PIP_CONF_OVERRIDE:-./.dev/pip.conf}:/etc/pip.conf:ro
+      - ./.secret/:/.secret/
+    entrypoint:
+      - /bin/sh
+      - -c
+    command:
+      - |
+        set -eux
+        python3 -c 'import yaml' || pip3 install PyYAML
+        mkdir -p /etc/rancher/k3s
+
+        echo >&2 "INFO: copying config.yaml"
+        cp /.dev/config.yaml /etc/rancher/k3s/config.yaml
+
+        if ! [ -f /etc/rancher/k3s/registries.yaml ]; then
+          echo >&2 "INFO: writing new registries.yaml file"
+          /print-registries.sh | tee /etc/rancher/k3s/registries.yaml
+        fi
+
+        while ! [ -f /etc/rancher/k3s/k3s.yaml ]; do
+          echo >&2 "INFO: kubeconfig file not found yet, checking again in 5s"
+          sleep 5
+        done
+
+        echo >&2 "INFO: copying kubeconfig file"
+        cat /etc/rancher/k3s/k3s.yaml | /kubeconfig-fix.py > /.secret/kubeconfig
+
+        if [ -n "$${USER_UID:-}" ]; then
+          echo >&2 "INFO: fixing up kubeconfig permissions"
+          if [ -n "$${USER_GID:-}" ]; then
+            chown="$$USER_UID:$$USER_GID"
+          else
+            chown="$$USER_UID:$$USER_UID"
+          fi
+
+          chmod 600 /.secret/kubeconfig
+          chown "$$chown" /.secret/kubeconfig
+        else
+          chmod 644 /.secret/kubeconfig
+        fi
+
+        echo >&2 "INFO: sleeping"
+        exec tail -f /dev/null

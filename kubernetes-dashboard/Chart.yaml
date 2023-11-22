@@ -1,0 +1,4 @@
+apiVersion: v2
+name: dashboard-manifests
+type: application
+version: "v0.0.1"

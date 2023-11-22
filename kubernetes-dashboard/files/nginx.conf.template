@@ -1,0 +1,21 @@
+upstream dashboard {
+    server ${DASHBOARD_HOSTNAME}:${DASHBOARD_PORT};
+}
+
+server {
+    listen 80 default_server;
+
+    access_log  /var/log/nginx/access.log  main;
+
+    location / {
+        proxy_set_header Host ${DASHBOARD_HOSTNAME};
+        proxy_ssl_name ${DASHBOARD_HOSTNAME};
+        proxy_set_header X-Real-IP $remote_addr;
+        proxy_set_header X-Forwarded-For $proxy_add_x_forwarded_for;
+        proxy_set_header Authorization "Bearer ${DASHBOARD_TOKEN}";
+
+        proxy_pass https://dashboard;
+        proxy_ssl_verify off;
+    }
+
+}

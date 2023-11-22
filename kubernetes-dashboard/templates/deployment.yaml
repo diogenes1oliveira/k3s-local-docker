@@ -1,0 +1,59 @@
+---
+apiVersion: apps/v1
+kind: Deployment
+metadata:
+  name: dashboard-server
+  namespace: "{{ .Release.Namespace }}"
+  labels:
+    app: dashboard-server
+spec:
+  replicas: 1
+  selector:
+    matchLabels:
+      app: dashboard-server
+  template:
+    metadata:
+      labels:
+        app: dashboard-server
+    spec:
+      containers:
+        - name: nginx
+          image: library/nginx:1-alpine
+          ports:
+            - name: nginx
+              containerPort: 80
+          env:
+            - name: DASHBOARD_HOSTNAME
+              value: kubernetes-dashboard.{{ .Release.Namespace }}.svc.cluster.local
+            - name: DASHBOARD_PORT
+              value: "443"
+            - name: DASHBOARD_TOKEN
+              valueFrom:
+                secretKeyRef:
+                  name: admin-user
+                  key: token
+          livenessProbe:
+            tcpSocket:
+              port: nginx
+            initialDelaySeconds: 10
+            periodSeconds: 20
+          readinessProbe:
+            tcpSocket:
+              port: nginx
+            initialDelaySeconds: 10
+            periodSeconds: 20
+          resources:
+            requests:
+              cpu: 100m
+              memory: 100Mi
+            limits:
+              cpu: 120m
+              memory: 120Mi
+          volumeMounts:
+            - mountPath: /etc/nginx/templates/default.conf.template
+              name: conf
+              subPath: nginx.conf.template
+      volumes:
+        - name: conf
+          configMap:
+            name: dashboard-nginx-conf

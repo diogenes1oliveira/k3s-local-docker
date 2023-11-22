@@ -1,0 +1,5 @@
+dashboard:
+  hostname: localhost
+  auth:
+    username: dashboard
+    password: ""

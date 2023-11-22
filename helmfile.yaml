@@ -1,0 +1,130 @@
+repositories:
+  - name: ingress-nginx
+    url: https://kubernetes.github.io/ingress-nginx
+  - name: emberstack
+    url: https://emberstack.github.io/helm-charts
+  - name: openkruise
+    url: https://openkruise.github.io/charts
+  - name: jetstack
+    url: https://charts.jetstack.io
+  - name: kubernetes-dashboard
+    url: https://kubernetes.github.io/dashboard
+
+releases:
+  - name: ingress-nginx
+    chart: ingress-nginx/ingress-nginx
+    version: "4.8.3"
+    namespace: ingress-nginx
+    createNamespace: true
+    values:
+      - rbac:
+          create: true
+        controller:
+          allowSnippetAnnotations: "true"
+          hostNetwork: true
+          config:
+            hsts: "false"
+
+  - name: reflector
+    chart: emberstack/reflector
+    version: "7.1.216"
+    namespace: reflector
+    createNamespace: true
+    values:
+      - resources:
+          limits:
+            cpu: 100m
+            memory: 128Mi
+          requests:
+            cpu: 100m
+            memory: 128Mi
+
+  - name: cert-manager
+    chart: jetstack/cert-manager
+    version: "v1.13.2"
+    namespace: cert-manager
+    createNamespace: true
+    values:
+      - installCRDs: true
+        resources:
+          limits:
+            cpu: 100m
+            memory: 128Mi
+          requests:
+            cpu: 100m
+            memory: 128Mi
+        webhook:
+          resources:
+            limits:
+              cpu: 100m
+              memory: 128Mi
+            requests:
+              cpu: 100m
+              memory: 128Mi
+        cainjector:
+          resources:
+            limits:
+              cpu: 100m
+              memory: 128Mi
+            requests:
+              cpu: 100m
+              memory: 128Mi
+
+  - name: self-signed-ca
+    chart: ./self-signed-ca/
+    namespace: cert-manager
+    disableValidationOnInstall: true
+    needs:
+      - cert-manager/cert-manager
+    values:
+      - ./self-signed-ca/values.yaml.gotmpl
+    hooks:
+      - events:
+          - prepare
+        showlogs: true
+        command: bash
+        args:
+          - ./self-signed-ca/generate-ca.sh
+      - &wait-endpoints
+        events:
+          - presync
+        showlogs: true
+        command: bash
+        args:
+          - -c
+          - |
+            set -eu
+            bash .dev/wait-for-endpoint.sh cert-manager cert-manager-webhook
+            bash .dev/wait-for-endpoint.sh ingress-nginx ingress-nginx-controller-admission
+
+  - name: kubernetes-dashboard
+    chart: kubernetes-dashboard/kubernetes-dashboard
+    version: "6.0.8"
+    needs:
+      - cert-manager/cert-manager
+    namespace: kubernetes-dashboard
+    disableValidationOnInstall: true
+    hooks:
+      - *wait-endpoints
+
+  - name: kubernetes-dashboard-manifests
+    chart: ./kubernetes-dashboard/
+    namespace: kubernetes-dashboard
+    needs:
+      - ingress-nginx/ingress-nginx
+    disableValidationOnInstall: true
+    values:
+      - ./kubernetes-dashboard/values.yaml.gotmpl
+    hooks:
+      - *wait-endpoints
+
+  - name: docker-registry
+    chart: ./docker-registry/
+    namespace: docker-registry
+    needs:
+      - cert-manager/cert-manager
+    disableValidationOnInstall: true
+    values:
+      - ./docker-registry/values.yaml.gotmpl
+    hooks:
+      - *wait-endpoints

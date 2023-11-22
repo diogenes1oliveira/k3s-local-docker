@@ -1,0 +1,6 @@
+hostname: localhost
+port: 30001
+auth:
+  username: docker
+  password: docker
+secret: secret
