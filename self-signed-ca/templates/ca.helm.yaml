@@ -5,6 +5,8 @@ type: kubernetes.io/tls
 metadata:
   name: selfsigned-ca-secret
   namespace: "{{ .Release.Namespace }}"
+  annotations:
+    checksum/config-ca: {{ (printf "%s:%s" (.Files.Get ".secret/tls.crt") (.Files.Get ".secret/tls.key")) | sha256sum }}
 data:
   tls.crt: {{ .Files.Get ".secret/tls.crt" | b64enc }}
   tls.key: {{ .Files.Get ".secret/tls.key" | b64enc }}
@@ -15,6 +17,8 @@ kind: ClusterIssuer
 metadata:
   name: selfsigned-ca-issuer
   namespace: "{{ .Release.Namespace }}"
+  annotations:
+    checksum/config-ca: {{ (printf "%s:%s" (.Files.Get ".secret/tls.crt") (.Files.Get ".secret/tls.key")) | sha256sum }}
 spec:
   ca:
     secretName: selfsigned-ca-secret
