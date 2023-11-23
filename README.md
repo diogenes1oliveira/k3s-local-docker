@@ -21,7 +21,8 @@ You also need to have the following programs installed:
 You can setup Helm, Helmfile and Kubectl using the script below:
 
 ```shell
-.dev/setup-deps.sh
+# OUTPUT_DIR is a directory in your $PATH
+.dev/setup-deps.sh OUTPUT_DIR
 ```
 
 ## Installing
