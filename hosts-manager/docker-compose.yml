@@ -1,0 +1,28 @@
+version: "2.4"
+services:
+  hosts-manager:
+    build:
+      context: ..
+      dockerfile: hosts-manager/Dockerfile
+      args:
+        - DOCKER_IO_MIRROR=${DOCKER_IO_MIRROR:-docker.io}
+        - PIP_CONF_OVERRIDE=${PIP_CONF_OVERRIDE:-.dev/pip.conf}
+        - http_proxy=${K3S_HTTP_PROXY:-}
+        - https_proxy=${K3S_HTTP_PROXY:-}
+        - no_proxy=${K3S_NO_PROXY:-}
+        - HTTP_PROXY=${K3S_HTTP_PROXY:-}
+        - HTTPS_PROXY=${K3S_HTTP_PROXY:-}
+        - NO_PROXY=${K3S_NO_PROXY:-}
+    environment:
+      - KUBECONFIG=/.kube/config
+      - CONTEXT
+      - CLUSTER_CONNECT_PROXY
+      - HOSTS_PATTERN
+      - HOSTS_IP
+      - HOSTS_PATH=/host/etc
+    volumes:
+      - "$KUBECONFIG:/.kube/config:ro"
+      - "${HOSTS_PATH:-/etc}:/host/etc"
+    restart: unless-stopped
+    mem_limit: 300m
+    cpus: 1
