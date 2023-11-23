@@ -4,15 +4,13 @@ services:
     build:
       context: ..
       dockerfile: hosts-manager/Dockerfile
+      network: host
       args:
         - DOCKER_IO_MIRROR=${DOCKER_IO_MIRROR:-docker.io}
         - PIP_CONF_OVERRIDE=${PIP_CONF_OVERRIDE:-.dev/pip.conf}
         - http_proxy=${K3S_HTTP_PROXY:-}
         - https_proxy=${K3S_HTTP_PROXY:-}
         - no_proxy=${K3S_NO_PROXY:-}
-        - HTTP_PROXY=${K3S_HTTP_PROXY:-}
-        - HTTPS_PROXY=${K3S_HTTP_PROXY:-}
-        - NO_PROXY=${K3S_NO_PROXY:-}
     environment:
       - KUBECONFIG=/.kube/config
       - CONTEXT
@@ -26,3 +24,36 @@ services:
     restart: unless-stopped
     mem_limit: 300m
     cpus: 1
+
+  ingress-forwarder:
+    image: ${DOCKER_IO_MIRROR:-docker.io}/rancher/k3s:v1.28.3-k3s2
+    entrypoint:
+      - /bin/kubectl
+    command:
+      - --namespace=ingress-nginx
+      - port-forward
+      - svc/ingress-nginx-controller
+      - 80:80
+      - 443:443
+      - --address=0.0.0.0
+    ports:
+      - "${HOSTS_HTTP_PORT:-80}:80"
+      - "${HOSTS_HTTPS_PORT:-443}:443"
+    environment:
+      - KUBECONFIG=/.kube/config
+      - CONTEXT
+      - http_proxy=${CLUSTER_CONNECT_PROXY:-}
+      - https_proxy=${CLUSTER_CONNECT_PROXY:-}
+      - HTTP_PROXY=${CLUSTER_CONNECT_PROXY:-}
+      - HTTPS_PROXY=${CLUSTER_CONNECT_PROXY:-}
+    volumes:
+      - "$KUBECONFIG:/.kube/config:ro"
+      - "${HOSTS_PATH:-/etc}:/host/etc"
+    restart: unless-stopped
+    mem_limit: 300m
+    cpus: 1
+
+networks:
+  default:
+    driver: bridge
+    enable_ipv6: false

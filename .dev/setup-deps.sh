@@ -25,7 +25,7 @@ cd "$OUTPUT"
 
 curl -fLv https://github.com/helmfile/helmfile/releases/download/v0.158.1/helmfile_0.158.1_linux_amd64.tar.gz | tar xzv helmfile
 curl -fLv https://get.helm.sh/helm-v3.13.2-linux-amd64.tar.gz | tar xzv --strip-components=1 linux-amd64/helm
-curl -LO "https://dl.k8s.io/release/$(curl -L -s https://dl.k8s.io/release/stable.txt)/bin/linux/amd64/kubectl"
+curl -LO "https://dl.k8s.io/release/v1.28.4/bin/linux/amd64/kubectl"
 
 chmod +x helmfile helm kubectl
 
