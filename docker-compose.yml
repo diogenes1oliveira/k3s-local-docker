@@ -1,7 +1,7 @@
 version: "2.4"
 services:
   master:
-    hostname: $CLUSTER_HOSTNAME
+    hostname: $CLUSTER_EXTERNAL_HOSTNAME
     image: ${DOCKER_IO_MIRROR:-docker.io}/rancher/k3s:v1.28.3-k3s2
     network_mode: host
     privileged: true
@@ -10,7 +10,7 @@ services:
     depends_on:
       - python3
     environment:
-      - K3S_NODE_NAME=$CLUSTER_HOSTNAME
+      - K3S_NODE_NAME=$CLUSTER_EXTERNAL_HOSTNAME
       - K3S_KUBECONFIG_MODE=644
       - http_proxy=${K3S_HTTP_PROXY:-}
       - https_proxy=${K3S_HTTP_PROXY:-}
@@ -45,7 +45,7 @@ services:
     shm_size: 1g
     cpus: 1
     environment:
-      - CLUSTER_HOSTNAME
+      - CLUSTER_EXTERNAL_HOSTNAME
       - DOCKER_REGISTRY_PORT
       - PIP_ROOT_USER_ACTION=ignore
       - DOCKER_IO_MIRROR

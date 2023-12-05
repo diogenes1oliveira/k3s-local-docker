@@ -1,5 +1,5 @@
 dashboard:
-  hostname: {{ requiredEnv "CLUSTER_HOSTNAME" }}
+  hostname: {{ requiredEnv "CLUSTER_EXTERNAL_HOSTNAME" }}
   auth:
     username: {{ requiredEnv "CLUSTER_USERNAME" | quote }}
     password: {{ requiredEnv "CLUSTER_PASSWORD" | quote }}

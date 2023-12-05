@@ -19,7 +19,7 @@ configs:
   $DOCKER_IO_MIRROR:
     tls:
       insecure_skip_verify: true
-  $CLUSTER_HOSTNAME:$DOCKER_REGISTRY_PORT:
+  $CLUSTER_EXTERNAL_HOSTNAME:$DOCKER_REGISTRY_PORT:
     tls:
       insecure_skip_verify: true
 
@@ -29,7 +29,7 @@ else
 
 cat <<EOF
 configs:
-  $CLUSTER_HOSTNAME:$DOCKER_REGISTRY_PORT:
+  $CLUSTER_EXTERNAL_HOSTNAME:$DOCKER_REGISTRY_PORT:
     tls:
       insecure_skip_verify: true
 

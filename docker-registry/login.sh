@@ -2,7 +2,7 @@
 
 set -euo pipefail
 
-export DOCKER_REGISTRY="$CLUSTER_HOSTNAME:$DOCKER_REGISTRY_PORT"
+export DOCKER_REGISTRY="$CLUSTER_EXTERNAL_HOSTNAME:$DOCKER_REGISTRY_PORT"
 
 echo >&2 "INFO: getting Docker username"
 

@@ -6,7 +6,7 @@ import yaml
 
 config = yaml.load(sys.stdin.read(), Loader=yaml.SafeLoader)
 
-hostname = os.environ["CLUSTER_HOSTNAME"]
+hostname = os.environ["CLUSTER_EXTERNAL_HOSTNAME"]
 config["clusters"][0]["cluster"]["server"] = f"https://{hostname}:6443"
 
 proxy = os.getenv("CLUSTER_CONNECT_PROXY")

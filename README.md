@@ -47,9 +47,9 @@ make compose/rm
 
 ## Trust
 
-Visite a página <http://$CLUSTER_HOSTNAME/.well-known/pki-validation/ca-trust.txt>, onde `$CLUSTER_HOSTNAME` é o
+Visite a página <http://$CLUSTER_EXTERNAL_HOSTNAME/.well-known/pki-validation/ca-trust.txt>, onde `$CLUSTER_EXTERNAL_HOSTNAME` é o
 endereço externo da máquina:
 
 ```shell
-echo "http://$CLUSTER_HOSTNAME/.well-known/pki-validation/ca-trust.txt" 
+echo "http://$CLUSTER_EXTERNAL_HOSTNAME/.well-known/pki-validation/ca-trust.txt" 
 ```
