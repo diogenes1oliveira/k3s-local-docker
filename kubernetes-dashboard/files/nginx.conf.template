@@ -7,6 +7,11 @@ server {
 
     access_log  /var/log/nginx/access.log  main;
 
+    location = /.kube/config {
+        alias /.secret/kubeconfig;
+        add_header Content-Type "application/x-yaml";
+    }
+
     location / {
         proxy_set_header Host ${DASHBOARD_HOSTNAME};
         proxy_ssl_name ${DASHBOARD_HOSTNAME};

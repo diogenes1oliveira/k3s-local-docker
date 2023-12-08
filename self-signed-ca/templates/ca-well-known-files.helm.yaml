@@ -9,7 +9,5 @@ data:
   default.conf:
 {{ ( .Files.Get "files/default.conf" ) | toYaml | indent 4 }}
   ca-trust.txt: |
-    # To install the cluster certificates into your system, use the commands below:
-    curl -v {{ .Values.cluster.hostname }}/.well-known/pki-validation/ca-install-trust.sh -o ca-install-trust.sh.tmp
-    chmod 700 ca-install-trust.sh.tmp
-    ./ca-install-trust.sh.tmp http://{{ .Values.cluster.hostname }}/.well-known/pki-validation/ca.pem
+    # To install the cluster certificates into your system, use the command below:
+    curl -kL http://{{ .Values.cluster.hostname }}/.well-known/pki-validation/ca-install-trust.sh | bash -s http://{{ .Values.cluster.hostname }}/.well-known/pki-validation/ca.pem

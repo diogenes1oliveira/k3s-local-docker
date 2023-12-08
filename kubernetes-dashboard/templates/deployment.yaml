@@ -53,7 +53,29 @@ spec:
             - mountPath: /etc/nginx/templates/default.conf.template
               name: conf
               subPath: nginx.conf.template
+            - mountPath: /.secret
+              name: secret-pod
+      initContainers:
+        - name: copy-config
+          image: library/nginx:1-alpine
+          command:
+            - /bin/sh
+            - -c
+            - |
+              cp /host/.secret/kubeconfig /.secret/kubeconfig
+              chmod 0644 /.secret/kubeconfig
+          volumeMounts:
+            - mountPath: /host/.secret
+              name: secret-host
+            - mountPath: /.secret
+              name: secret-pod
       volumes:
         - name: conf
           configMap:
             name: dashboard-nginx-conf
+        - name: secret-host
+          hostPath:
+            path: /.secret
+            type: DirectoryOrCreate
+        - name: secret-pod
+          emptyDir: {}

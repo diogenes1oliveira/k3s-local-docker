@@ -22,6 +22,7 @@ services:
       - ${CLUSTER_LOCAL_PATH:-./.local}/etc/rancher:/etc/rancher
       - ${CLUSTER_LOCAL_PATH:-./.local}/var/lib:/var/lib
       - ${CLUSTER_LOCAL_PATH:-./.local}/run:/run
+      - ${CLUSTER_LOCAL_PATH:-./.local}/.secret:/.secret
     entrypoint:
       - /bin/sh
       - -c
@@ -63,10 +64,10 @@ services:
       - ${CLUSTER_LOCAL_PATH:-./.local}/etc/rancher:/etc/rancher
       - ${CLUSTER_LOCAL_PATH:-./.local}/var/lib:/var/lib
       - ${CLUSTER_LOCAL_PATH:-./.local}/run:/run
+      - ${CLUSTER_LOCAL_PATH:-./.local}/.secret:/.secret
       - ./.dev/print-registries.sh:/print-registries.sh:ro
       - ./.dev/kubeconfig-fix.py:/kubeconfig-fix.py:ro
       - ${PIP_CONF_OVERRIDE:-./.dev/pip.conf}:/etc/pip.conf:ro
-      - ./.secret/:/.secret/
     entrypoint:
       - /bin/sh
       - -c
