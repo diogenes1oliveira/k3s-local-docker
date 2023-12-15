@@ -16,7 +16,7 @@ compose/rm:
 
 .PHONY: setup
 setup:
-	helmfile apply
+	. .dev/setup-env.sh && helmfile apply
 
 .PHONY: kube/config
 kube/config:

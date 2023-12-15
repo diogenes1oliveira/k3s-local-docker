@@ -36,7 +36,7 @@ make compose/up
 ## Configuring
 
 ```shell
-helmfile apply
+make setup
 ```
 
 ## Destroying
