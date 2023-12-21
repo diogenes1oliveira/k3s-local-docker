@@ -21,7 +21,9 @@ releases:
           create: true
         controller:
           allowSnippetAnnotations: "true"
-          hostNetwork: true
+          service:
+            enabled: true
+            type: NodePort
           config:
             hsts: "false"
 

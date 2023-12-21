@@ -22,3 +22,7 @@ setup:
 kube/config:
 	curl -kLv -u $(CLUSTER_USERNAME):$(CLUSTER_PASSWORD) https://$(CLUSTER_EXTERNAL_HOSTNAME)/dashboard/.kube/config | .dev/kubeconfig-fix.py > $(KUBECONFIG)
 	curl -kL http://$(CLUSTER_EXTERNAL_HOSTNAME)/.well-known/pki-validation/ca-install-trust.sh | bash -s http://$(CLUSTER_EXTERNAL_HOSTNAME)/.well-known/pki-validation/ca.pem
+
+.PHONY: trust
+trust:
+	python3 -m webbrowser "http://$(CLUSTER_EXTERNAL_HOSTNAME)/.well-known/pki-validation/ca-trust.txt" 

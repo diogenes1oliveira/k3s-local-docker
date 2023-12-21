@@ -53,3 +53,7 @@ endereço externo da máquina:
 ```shell
 echo "http://$CLUSTER_EXTERNAL_HOSTNAME/.well-known/pki-validation/ca-trust.txt" 
 ```
+
+## Kubeconfig
+
+Faça o download do kubeconfig em http://$CLUSTER_EXTERNAL_HOSTNAME/dashboard/.kube/config
