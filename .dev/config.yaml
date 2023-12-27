@@ -1,2 +1,4 @@
 disable:
   - traefik
+  - servicelb
+service-node-port-range: 30100-30202

@@ -3,7 +3,6 @@ services:
   master:
     hostname: $CLUSTER_EXTERNAL_HOSTNAME
     image: ${DOCKER_IO_MIRROR:-docker.io}/rancher/k3s:v1.28.3-k3s2
-    network_mode: host
     privileged: true
     restart: unless-stopped
     shm_size: 2g
@@ -23,6 +22,11 @@ services:
       - ${CLUSTER_LOCAL_PATH:-./.local}/var/lib:/var/lib
       - ${CLUSTER_LOCAL_PATH:-./.local}/run:/run
       - ${CLUSTER_LOCAL_PATH:-./.local}/.secret:/.secret
+    ports:
+      - "80:30201"
+      - "443:30202"
+      - "6443:6443"
+      - "30100-30200:30100-30200"
     entrypoint:
       - /bin/sh
       - -c
@@ -40,8 +44,6 @@ services:
   python3:
     image: ${DOCKER_IO_MIRROR:-docker.io}/library/python:3.9
     restart: unless-stopped
-    network_mode: host
-    privileged: true
     mem_limit: 500m
     shm_size: 1g
     cpus: 1
